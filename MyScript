@@ -1,4 +1,4 @@
--- 🔒 JERY FINAL PREMIUM SYSTEM
+-- 🔒 JERY FINAL PREMIUM SYSTEM + WEBHOOK
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -8,8 +8,8 @@ local username = player.Name
 
 -- ================= CONFIG =================
 local CONFIG = {
-    KILL_URL = "https://raw.githubusercontent.com/paresongXjery/Key/refs/heads/main/status.json", -- GANTI
-    VERSION = "1.0",
+    KILL_URL = "https://raw.githubusercontent.com/NamaKamu/script/main/status.json", -- GANTI
+    WEBHOOK = "https://discord.com/api/webhooks/1484027586840625333/xobs9n5VtkGWjo4_nJOG3qzufDTTh6jcPJaOcJVExr-v7OjBmeg6L3lrkpm6sUeOchG1",
     KEY_FILE = "jery_key.txt",
     DATA_FILE = "jery_data.json",
     EXPIRE_DAYS = 7
@@ -26,12 +26,12 @@ local function killSwitch()
     local data = HttpService:JSONDecode(r)
 
     if data.status == "off" then
-        warn("⛔ Script OFF oleh developer")
+        warn("⛔ Script OFF")
         return false
     end
 
     if data.banned and table.find(data.banned, username) then
-        warn("🚫 Kamu dibanned")
+        warn("🚫 Banned")
         return false
     end
 
@@ -49,7 +49,7 @@ local VALID_KEYS = {
     ["JERY-005"] = true
 }
 
--- ================= LOAD DATA =================
+-- ================= FILE =================
 local function loadData()
     if isfile and isfile(CONFIG.DATA_FILE) then
         return HttpService:JSONDecode(readfile(CONFIG.DATA_FILE))
@@ -75,6 +75,33 @@ local function loadKey()
     end
 end
 
+-- ================= WEBHOOK =================
+local function sendWebhook(key, statusText)
+    local data = {
+        ["embeds"] = {{
+            ["title"] = "🔑 Jery Script Log",
+            ["color"] = 65280,
+            ["fields"] = {
+                {["name"] = "Username", ["value"] = username, ["inline"] = true},
+                {["name"] = "Key", ["value"] = key, ["inline"] = true},
+                {["name"] = "Status", ["value"] = statusText, ["inline"] = false},
+                {["name"] = "Time", ["value"] = os.date("%Y-%m-%d %H:%M:%S"), ["inline"] = false}
+            }
+        }}
+    }
+
+    local json = HttpService:JSONEncode(data)
+
+    pcall(function()
+        request({
+            Url = CONFIG.WEBHOOK,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = json
+        })
+    end)
+end
+
 -- ================= VALIDATE =================
 local function validateKey(key)
     if not VALID_KEYS[key] then
@@ -83,30 +110,24 @@ local function validateKey(key)
 
     local data = loadData()
 
-    -- belum pernah dipakai
     if not data[key] then
         data[key] = {
             user = username,
             time = os.time()
         }
         saveData(data)
-        return true, "Berhasil"
+        return true, "Key berhasil di bind"
     end
 
-    -- sudah dipakai user lain
     if data[key].user ~= username then
-        return false, "Key sudah dipakai"
+        return false, "Key sudah dipakai user lain"
     end
 
-    -- cek expire
-    local now = os.time()
-    local diff = now - data[key].time
-
-    if diff > (CONFIG.EXPIRE_DAYS * 86400) then
+    if os.time() - data[key].time > (CONFIG.EXPIRE_DAYS * 86400) then
         return false, "Key expired"
     end
 
-    return true, "Berhasil"
+    return true, "Login sukses"
 end
 
 -- ================= GUI =================
@@ -128,8 +149,7 @@ title.TextScaled = true
 local box = Instance.new("TextBox", frame)
 box.Size = UDim2.new(0.8,0,0,40)
 box.Position = UDim2.new(0.1,0,0.35,0)
-box.PlaceholderText = "Enter your key..."
-box.TextScaled = true
+box.PlaceholderText = "Enter Key..."
 
 local btn = Instance.new("TextButton", frame)
 btn.Size = UDim2.new(0.5,0,0,40)
@@ -144,7 +164,6 @@ status.TextColor3 = Color3.new(1,1,1)
 
 local passed = false
 
--- ================= BUTTON =================
 btn.MouseButton1Click:Connect(function()
     local key = box.Text
 
@@ -152,22 +171,23 @@ btn.MouseButton1Click:Connect(function()
 
     if ok then
         saveKey(key)
+        sendWebhook(key, "SUCCESS")
         status.Text = "✅ "..msg
         passed = true
         wait(1)
         gui:Destroy()
     else
+        sendWebhook(key, "FAILED: "..msg)
         status.Text = "❌ "..msg
     end
 end)
 
--- ================= AUTO LOGIN =================
+-- AUTO LOGIN
 local saved = loadKey()
-
 if saved then
     local ok,msg = validateKey(saved)
-
     if ok then
+        sendWebhook(saved, "AUTO LOGIN")
         passed = true
         gui:Destroy()
     end
@@ -175,7 +195,8 @@ end
 
 repeat wait() until passed
 
--- ================= SCRIPT UTAMA =================
+-- ================= SCRIPT KAMU =================
+print("🚀 Script aktif!")
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
