@@ -820,7 +820,7 @@ RunService.Heartbeat:Connect(function()
 end)
 task.spawn(function()
     while true do
-        wait(10) -- cek tiap 10 detik
+        wait(5) -- cek tiap 5 detik
 
         local s, r = pcall(function()
             return game:HttpGet(CONFIG.KILL_URL)
