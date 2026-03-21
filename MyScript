@@ -8,7 +8,7 @@ local username = player.Name
 
 -- ================= CONFIG =================
 local CONFIG = {
-    KILL_URL = "https://raw.githubusercontent.com/NamaKamu/script/main/status.json", -- GANTI
+    KILL_URL = "https://raw.githubusercontent.com/paresongXjery/Key/refs/heads/main/status.json", -- GANTI
     WEBHOOK = "https://discord.com/api/webhooks/1484027586840625333/xobs9n5VtkGWjo4_nJOG3qzufDTTh6jcPJaOcJVExr-v7OjBmeg6L3lrkpm6sUeOchG1",
     KEY_FILE = "jery_key.txt",
     DATA_FILE = "jery_data.json",
@@ -42,11 +42,11 @@ if not killSwitch() then return end
 
 -- ================= KEY LIST =================
 local VALID_KEYS = {
-    ["JERY-001"] = true,
-    ["JERY-002"] = true,
-    ["JERY-003"] = true,
-    ["JERY-004"] = true,
-    ["JERY-005"] = true
+    ["abjh-skfn-78fn-uuia"] = true,
+    ["skvd-as7a-l7a9-nak2"] = true,
+    ["asfn-sfw2-34dg-35gs"] = true,
+    ["sddf-dhr5-dbfs-egds"] = true,
+    ["asfs-sw2s-2fsa-gasf"] = true
 }
 
 -- ================= FILE =================
