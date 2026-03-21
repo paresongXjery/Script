@@ -8,7 +8,7 @@ local username = player.Name
 
 -- ================= CONFIG =================
 local CONFIG = {
-    URL = "https://raw.githubusercontent.com/NamaKamu/script/main/status.json", -- GANTI INI
+    URL = "https://raw.githubusercontent.com/paresongXjery/Key/refs/heads/main/status.json", -- GANTI INI
     VERSION = "1.0",
     KEY_FILE = "jery_key.txt",
     EXPIRE_DAYS = 7
