@@ -8,7 +8,7 @@ local username = player.Name
 
 -- ================= CONFIG =================
 local CONFIG = {
-    KILL_URL = "https://raw.githubusercontent.com/NamaKamu/script/main/status.json", -- GANTI
+    KILL_URL = "https://raw.githubusercontent.com/paresongXjery/Key/refs/heads/main/status.json", -- GANTI
     VERSION = "1.0",
     KEY_FILE = "jery_key.txt",
     DATA_FILE = "jery_data.json",
