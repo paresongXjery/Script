@@ -1,4 +1,4 @@
--- 🔒 JERY FINAL SYSTEM (KILL SWITCH + 5 KEY LOCK)
+-- 🔒 JERY FINAL PREMIUM SYSTEM
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -8,37 +8,30 @@ local username = player.Name
 
 -- ================= CONFIG =================
 local CONFIG = {
-    URL = "https://raw.githubusercontent.com/paresongXjery/Key/refs/heads/main/status.json", -- GANTI INI
+    KILL_URL = "https://raw.githubusercontent.com/NamaKamu/script/main/status.json", -- GANTI
     VERSION = "1.0",
     KEY_FILE = "jery_key.txt",
+    DATA_FILE = "jery_data.json",
     EXPIRE_DAYS = 7
 }
 
 -- ================= KILL SWITCH =================
 local function killSwitch()
-    local success, response = pcall(function()
-        return game:HttpGet(CONFIG.URL)
+    local s,r = pcall(function()
+        return game:HttpGet(CONFIG.KILL_URL)
     end)
 
-    if not success then
-        warn("❌ Server error!")
-        return false
-    end
+    if not s then return false end
 
-    local data = HttpService:JSONDecode(response)
+    local data = HttpService:JSONDecode(r)
 
     if data.status == "off" then
-        warn("⛔ Script dimatikan developer!")
+        warn("⛔ Script OFF oleh developer")
         return false
     end
 
     if data.banned and table.find(data.banned, username) then
-        warn("🚫 Kamu dibanned!")
-        return false
-    end
-
-    if data.version and data.version ~= CONFIG.VERSION then
-        warn("⚠️ Script outdated!")
+        warn("🚫 Kamu dibanned")
         return false
     end
 
@@ -47,16 +40,29 @@ end
 
 if not killSwitch() then return end
 
--- ================= KEY DATABASE (5 KEY ONLY) =================
-local KEYS = {
-    ["JERY-101"] = nil,
-    ["JERY-567"] = nil,
-    ["JERY-178"] = nil,
-    ["JERY-267"] = nil,
-    ["JERY-345"] = nil
+-- ================= KEY LIST =================
+local VALID_KEYS = {
+    ["JERY-001"] = true,
+    ["JERY-002"] = true,
+    ["JERY-003"] = true,
+    ["JERY-004"] = true,
+    ["JERY-005"] = true
 }
 
--- ================= SAVE / LOAD =================
+-- ================= LOAD DATA =================
+local function loadData()
+    if isfile and isfile(CONFIG.DATA_FILE) then
+        return HttpService:JSONDecode(readfile(CONFIG.DATA_FILE))
+    end
+    return {}
+end
+
+local function saveData(data)
+    if writefile then
+        writefile(CONFIG.DATA_FILE, HttpService:JSONEncode(data))
+    end
+end
+
 local function saveKey(key)
     if writefile then
         writefile(CONFIG.KEY_FILE, key)
@@ -69,45 +75,38 @@ local function loadKey()
     end
 end
 
--- ================= VALIDATE KEY =================
-local dataFile = "jery_data.json"
-
+-- ================= VALIDATE =================
 local function validateKey(key)
-    if not KEYS[key] then
-        warn("❌ Key tidak valid!")
-        return false
+    if not VALID_KEYS[key] then
+        return false, "Key tidak valid"
     end
 
-    local data = {}
+    local data = loadData()
 
-    if isfile and isfile(dataFile) then
-        data = HttpService:JSONDecode(readfile(dataFile))
-    end
-
-    -- pertama kali pakai
+    -- belum pernah dipakai
     if not data[key] then
         data[key] = {
             user = username,
             time = os.time()
         }
-
-        writefile(dataFile, HttpService:JSONEncode(data))
-        return true
+        saveData(data)
+        return true, "Berhasil"
     end
 
-    -- cek user
+    -- sudah dipakai user lain
     if data[key].user ~= username then
-        warn("🚫 Key sudah dipakai user lain!")
-        return false
+        return false, "Key sudah dipakai"
     end
 
     -- cek expire
-    if os.time() - data[key].time > (CONFIG.EXPIRE_DAYS * 86400) then
-        warn("⏳ Key expired!")
-        return false
+    local now = os.time()
+    local diff = now - data[key].time
+
+    if diff > (CONFIG.EXPIRE_DAYS * 86400) then
+        return false, "Key expired"
     end
 
-    return true
+    return true, "Berhasil"
 end
 
 -- ================= GUI =================
@@ -115,24 +114,26 @@ local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = "JeryKey"
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,300,0,180)
-frame.Position = UDim2.new(0.5,-150,0.5,-90)
-frame.BackgroundColor3 = Color3.fromRGB(20,20,30)
+frame.Size = UDim2.new(0,320,0,200)
+frame.Position = UDim2.new(0.5,-160,0.5,-100)
+frame.BackgroundColor3 = Color3.fromRGB(15,15,25)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1,0,0,40)
 title.Text = "🔑 Jery Key System"
 title.TextColor3 = Color3.new(1,1,1)
 title.BackgroundTransparency = 1
+title.TextScaled = true
 
 local box = Instance.new("TextBox", frame)
 box.Size = UDim2.new(0.8,0,0,40)
-box.Position = UDim2.new(0.1,0,0.4,0)
-box.PlaceholderText = "Enter Key..."
+box.Position = UDim2.new(0.1,0,0.35,0)
+box.PlaceholderText = "Enter your key..."
+box.TextScaled = true
 
 local btn = Instance.new("TextButton", frame)
 btn.Size = UDim2.new(0.5,0,0,40)
-btn.Position = UDim2.new(0.25,0,0.7,0)
+btn.Position = UDim2.new(0.25,0,0.65,0)
 btn.Text = "VERIFY"
 
 local status = Instance.new("TextLabel", frame)
@@ -143,29 +144,38 @@ status.TextColor3 = Color3.new(1,1,1)
 
 local passed = false
 
+-- ================= BUTTON =================
 btn.MouseButton1Click:Connect(function()
     local key = box.Text
 
-    if validateKey(key) then
-        status.Text = "✅ Success!"
+    local ok,msg = validateKey(key)
+
+    if ok then
         saveKey(key)
+        status.Text = "✅ "..msg
         passed = true
         wait(1)
         gui:Destroy()
     else
-        status.Text = "❌ Invalid / Used / Expired"
+        status.Text = "❌ "..msg
     end
 end)
 
--- AUTO LOGIN
+-- ================= AUTO LOGIN =================
 local saved = loadKey()
-if saved and validateKey(saved) then
-    passed = true
-    gui:Destroy()
+
+if saved then
+    local ok,msg = validateKey(saved)
+
+    if ok then
+        passed = true
+        gui:Destroy()
+    end
 end
 
 repeat wait() until passed
 
+-- ================= SCRIPT UTAMA =================
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
