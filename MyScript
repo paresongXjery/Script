@@ -818,3 +818,30 @@ RunService.Heartbeat:Connect(function()
 		end
 	end
 end)
+task.spawn(function()
+    while true do
+        wait(10) -- cek tiap 10 detik
+
+        local s, r = pcall(function()
+            return game:HttpGet(CONFIG.KILL_URL)
+        end)
+
+        if s then
+            local data = HttpService:JSONDecode(r)
+
+            if data.status == "off" then
+                warn("⛔ Script dimatikan dari GitHub")
+
+                -- HAPUS GUI
+                if game.CoreGui:FindFirstChild("JeryKey") then
+                    game.CoreGui.JeryKey:Destroy()
+                end
+
+                -- STOP TOTAL
+                while true do
+                    task.wait()
+                end
+            end
+        end
+    end
+end)
