@@ -49,11 +49,11 @@ if not killSwitch() then return end
 
 -- ================= KEY DATABASE (5 KEY ONLY) =================
 local KEYS = {
-    ["bjgs67sw"] = nil,
-    ["knjjbs89"] = nil,
-    ["68tsbhjv"] = nil,
-    ["67svhuf6"] = nil,
-    ["kmnjas78"] = nil
+    ["JERY-101"] = nil,
+    ["JERY-567"] = nil,
+    ["JERY-178"] = nil,
+    ["JERY-267"] = nil,
+    ["JERY-345"] = nil
 }
 
 -- ================= SAVE / LOAD =================
