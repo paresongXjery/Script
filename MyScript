@@ -1,0 +1,789 @@
+-- 🔒 JERY FINAL SYSTEM (KILL SWITCH + 5 KEY LOCK)
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+local username = player.Name
+
+-- ================= CONFIG =================
+local CONFIG = {
+    URL = "https://raw.githubusercontent.com/NamaKamu/script/main/status.json", -- GANTI INI
+    VERSION = "1.0",
+    KEY_FILE = "jery_key.txt",
+    EXPIRE_DAYS = 7
+}
+
+-- ================= KILL SWITCH =================
+local function killSwitch()
+    local success, response = pcall(function()
+        return game:HttpGet(CONFIG.URL)
+    end)
+
+    if not success then
+        warn("❌ Server error!")
+        return false
+    end
+
+    local data = HttpService:JSONDecode(response)
+
+    if data.status == "off" then
+        warn("⛔ Script dimatikan developer!")
+        return false
+    end
+
+    if data.banned and table.find(data.banned, username) then
+        warn("🚫 Kamu dibanned!")
+        return false
+    end
+
+    if data.version and data.version ~= CONFIG.VERSION then
+        warn("⚠️ Script outdated!")
+        return false
+    end
+
+    return true
+end
+
+if not killSwitch() then return end
+
+-- ================= KEY DATABASE (5 KEY ONLY) =================
+local KEYS = {
+    ["bjgs67sw"] = nil,
+    ["knjjbs89"] = nil,
+    ["68tsbhjv"] = nil,
+    ["67svhuf6"] = nil,
+    ["kmnjas78"] = nil
+}
+
+-- ================= SAVE / LOAD =================
+local function saveKey(key)
+    if writefile then
+        writefile(CONFIG.KEY_FILE, key)
+    end
+end
+
+local function loadKey()
+    if isfile and isfile(CONFIG.KEY_FILE) then
+        return readfile(CONFIG.KEY_FILE)
+    end
+end
+
+-- ================= VALIDATE KEY =================
+local dataFile = "jery_data.json"
+
+local function validateKey(key)
+    if not KEYS[key] then
+        warn("❌ Key tidak valid!")
+        return false
+    end
+
+    local data = {}
+
+    if isfile and isfile(dataFile) then
+        data = HttpService:JSONDecode(readfile(dataFile))
+    end
+
+    -- pertama kali pakai
+    if not data[key] then
+        data[key] = {
+            user = username,
+            time = os.time()
+        }
+
+        writefile(dataFile, HttpService:JSONEncode(data))
+        return true
+    end
+
+    -- cek user
+    if data[key].user ~= username then
+        warn("🚫 Key sudah dipakai user lain!")
+        return false
+    end
+
+    -- cek expire
+    if os.time() - data[key].time > (CONFIG.EXPIRE_DAYS * 86400) then
+        warn("⏳ Key expired!")
+        return false
+    end
+
+    return true
+end
+
+-- ================= GUI =================
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "JeryKey"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,300,0,180)
+frame.Position = UDim2.new(0.5,-150,0.5,-90)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,30)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "🔑 Jery Key System"
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundTransparency = 1
+
+local box = Instance.new("TextBox", frame)
+box.Size = UDim2.new(0.8,0,0,40)
+box.Position = UDim2.new(0.1,0,0.4,0)
+box.PlaceholderText = "Enter Key..."
+
+local btn = Instance.new("TextButton", frame)
+btn.Size = UDim2.new(0.5,0,0,40)
+btn.Position = UDim2.new(0.25,0,0.7,0)
+btn.Text = "VERIFY"
+
+local status = Instance.new("TextLabel", frame)
+status.Size = UDim2.new(1,0,0,20)
+status.Position = UDim2.new(0,0,1,-20)
+status.BackgroundTransparency = 1
+status.TextColor3 = Color3.new(1,1,1)
+
+local passed = false
+
+btn.MouseButton1Click:Connect(function()
+    local key = box.Text
+
+    if validateKey(key) then
+        status.Text = "✅ Success!"
+        saveKey(key)
+        passed = true
+        wait(1)
+        gui:Destroy()
+    else
+        status.Text = "❌ Invalid / Used / Expired"
+    end
+end)
+
+-- AUTO LOGIN
+local saved = loadKey()
+if saved and validateKey(saved) then
+    passed = true
+    gui:Destroy()
+end
+
+repeat wait() until passed
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local mouse = player:GetMouse()
+
+-- GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "JeryModHub"
+gui.ResetOnSpawn = false
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0,420,0,400)
+main.Position = UDim2.new(0.5,-210,0.5,-200)
+main.BackgroundColor3 = Color3.fromRGB(20,20,30)
+main.Active = true
+Instance.new("UICorner", main)
+
+-- SCROLL FRAME
+local scroll = Instance.new("ScrollingFrame", main)
+scroll.Size = UDim2.new(1,0,1,-40)
+scroll.Position = UDim2.new(0,0,0,40)
+scroll.CanvasSize = UDim2.new(0,0,0,600)
+scroll.ScrollBarThickness = 6
+scroll.BackgroundTransparency = 1
+
+-- TITLE
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "🔥 JeryMod HUB 🔥"
+title.TextColor3 = Color3.fromRGB(0,255,200)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBlack
+title.TextScaled = true
+
+-- DRAG
+local dragging, dragStart, startPos
+main.InputBegan:Connect(function(i)
+	if i.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = i.Position
+		startPos = main.Position
+		i.Changed:Connect(function()
+			if i.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
+end)
+
+UIS.InputChanged:Connect(function(i)
+	if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = i.Position - dragStart
+		main.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset+delta.X,startPos.Y.Scale,startPos.Y.Offset+delta.Y)
+	end
+end)
+
+-- HIDE GUI
+local visible = true
+UIS.InputBegan:Connect(function(i,p)
+	if p then return end
+	if i.KeyCode == Enum.KeyCode.M then
+		visible = not visible
+		gui.Enabled = visible
+	end
+end)
+
+-- UI HELPER
+local function label(text,y)
+	local l = Instance.new("TextLabel", scroll)
+	l.Size = UDim2.new(1,0,0,30)
+	l.Position = UDim2.new(0,0,0,y)
+	l.Text = text
+	l.TextColor3 = Color3.fromRGB(255,255,255)
+	l.BackgroundTransparency = 1
+	l.Font = Enum.Font.GothamBold
+	l.TextScaled = true
+end
+
+local function btn(text,y)
+	local b = Instance.new("TextButton", scroll)
+	b.Size = UDim2.new(0.9,0,0,35)
+	b.Position = UDim2.new(0.05,0,0,y)
+	b.Text = text
+	b.BackgroundColor3 = Color3.fromRGB(40,40,60)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Font = Enum.Font.GothamBold
+	b.TextScaled = true
+	Instance.new("UICorner", b)
+	return b
+end
+
+-- ================= UI LAYOUT =================
+label("⚙️ OTHER", 10)
+
+local bigBtn = btn("Big Head [OFF]",50)
+local aimBtn = btn("Aim Lock [OFF]",95)
+local flyBtn = btn("Fly [OFF]",140)
+
+label("🚀 FPS MENU", 200)
+
+local texBtn = btn("Low Texture",240)
+local boostBtn = btn("Boost FPS",285)
+local renderBtn = btn("Ultra Render Distance",330)
+
+-- STATE
+local big, aim, fly = false,false,false
+
+-- ================= BIG HEAD =================
+local original = {}
+
+local function applyBig()
+	for _,plr in pairs(Players:GetPlayers()) do
+		if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
+			local h = plr.Character.Head
+			
+			if not original[plr] then
+				original[plr] = h.Size
+			end
+			
+			if big then
+				h.Size = original[plr] * 4 -- 🔥 BESAR BANGET (SAMPAI LUTUT)
+				h.Transparency = 0.4
+			else
+				h.Size = original[plr]
+				h.Transparency = 0
+			end
+		end
+	end
+end
+
+bigBtn.MouseButton1Click:Connect(function()
+	big = not big
+	bigBtn.Text = "Big Head ["..(big and "ON" or "OFF").."]"
+	applyBig()
+end)
+
+UIS.InputBegan:Connect(function(input, gameProcessed)
+	if input.KeyCode == Enum.KeyCode.Y and (UIS:IsKeyDown(Enum.KeyCode.LeftControl) or UIS:IsKeyDown(Enum.KeyCode.RightControl)) then
+		big = not big
+		bigBtn.Text = "Big Head ["..(big and "ON" or "OFF").."]"
+		applyBig()
+	end
+end)
+
+-- ================= AIM =================
+aimBtn.MouseButton1Click:Connect(function()
+	aim = not aim
+	aimBtn.Text = "Aim Lock ["..(aim and "ON" or "OFF").."]"
+end)
+
+UIS.InputBegan:Connect(function(input, gameProcessed)
+	if input.KeyCode == Enum.KeyCode.V and (UIS:IsKeyDown(Enum.KeyCode.LeftControl) or UIS:IsKeyDown(Enum.KeyCode.RightControl)) then
+		aim = not aim
+		aimBtn.Text = "Aim Lock ["..(aim and "ON" or "OFF").."]"
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if aim then
+		local closest,dist=nil,100
+		for _,p in pairs(Players:GetPlayers()) do
+			if p~=player and p.Character and p.Character:FindFirstChild("Head") then
+				local pos,vis=camera:WorldToScreenPoint(p.Character.Head.Position)
+				if vis then
+					local d=(Vector2.new(pos.X,pos.Y)-Vector2.new(mouse.X,mouse.Y)).Magnitude
+					if d<dist then dist=d closest=p end
+				end
+			end
+		end
+		if closest then
+			camera.CFrame=camera.CFrame:Lerp(CFrame.new(camera.CFrame.Position,closest.Character.Head.Position),0.2)
+		end
+	end
+end)
+
+-- ================= FLY =================
+local bv,bg
+
+local function toggleFly()
+	fly = not fly
+	flyBtn.Text = "Fly ["..(fly and "ON" or "OFF").."]"
+	
+	local char = player.Character
+	if not char then return end
+	local root = char:FindFirstChild("HumanoidRootPart")
+
+	if fly then
+		bv = Instance.new("BodyVelocity", root)
+		bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+
+		bg = Instance.new("BodyGyro", root)
+		bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
+	else
+		if bv then bv:Destroy() end
+		if bg then bg:Destroy() end
+	end
+end
+
+flyBtn.MouseButton1Click:Connect(toggleFly)
+
+UIS.InputBegan:Connect(function(i)
+	if i.KeyCode == Enum.KeyCode.F and UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
+		toggleFly()
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if fly and bv and bg then
+		local move = Vector3.zero
+		if UIS:IsKeyDown(Enum.KeyCode.W) then move += camera.CFrame.LookVector end
+		if UIS:IsKeyDown(Enum.KeyCode.S) then move -= camera.CFrame.LookVector end
+		if UIS:IsKeyDown(Enum.KeyCode.A) then move -= camera.CFrame.RightVector end
+		if UIS:IsKeyDown(Enum.KeyCode.D) then move += camera.CFrame.RightVector end
+		
+		bv.Velocity = move * 60
+		bg.CFrame = camera.CFrame
+	end
+end)
+
+-- ================= FPS =================
+texBtn.MouseButton1Click:Connect(function()
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.Material = Enum.Material.SmoothPlastic
+		end
+	end
+end)
+
+boostBtn.MouseButton1Click:Connect(function()
+	Lighting.GlobalShadows = false
+	Lighting.FogEnd = 1e10
+	
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("ParticleEmitter") or v:IsA("Trail") then
+			v.Enabled = false
+		end
+	end
+end)
+
+renderBtn.MouseButton1Click:Connect(function()
+	camera.MaxZoomDistance = 100000 -- jauh banget
+	Lighting.FogEnd = 1e10
+end)
+-- ================= TELEPORT =================
+
+-- Tambah UI TELEPORT (di bawah FPS menu)
+label("📍 TELEPORT", 380)
+
+local tpBox = Instance.new("TextBox", scroll)
+tpBox.Size = UDim2.new(0.9,0,0,35)
+tpBox.Position = UDim2.new(0.05,0,0,420)
+tpBox.PlaceholderText = "Masukkan nama player..."
+tpBox.Text = ""
+tpBox.BackgroundColor3 = Color3.fromRGB(30,30,50)
+tpBox.TextColor3 = Color3.new(1,1,1)
+tpBox.Font = Enum.Font.Gotham
+tpBox.TextScaled = true
+Instance.new("UICorner", tpBox)
+
+-- biar scroll muat
+scroll.CanvasSize = UDim2.new(0,0,0,700)
+
+-- fungsi teleport
+local function teleportToPlayer(name)
+	for _,plr in pairs(Players:GetPlayers()) do
+		if plr ~= player and string.lower(plr.Name):find(string.lower(name)) then
+			if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				local myChar = player.Character
+				if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+					
+					myChar.HumanoidRootPart.CFrame =
+						plr.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
+
+					-- chat bubble di kepala (biar keliatan premium)
+					if myChar:FindFirstChild("Head") then
+						local bill = Instance.new("BillboardGui", myChar.Head)
+						bill.Size = UDim2.new(0,200,0,50)
+						bill.StudsOffset = Vector3.new(0,3,0)
+						bill.AlwaysOnTop = true
+
+						local txt = Instance.new("TextLabel", bill)
+						txt.Size = UDim2.new(1,0,1,0)
+						txt.BackgroundTransparency = 1
+						txt.Text = "Goto "..plr.Name
+						txt.TextColor3 = Color3.new(1,1,1)
+						txt.Font = Enum.Font.GothamBold
+						txt.TextScaled = true
+
+						task.delay(2, function()
+							if bill then bill:Destroy() end
+						end)
+					end
+				end
+			end
+		end
+	end
+end
+
+-- keybind CTRL + K
+UIS.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	
+	if input.KeyCode == Enum.KeyCode.K and UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
+		if tpBox.Text ~= "" then
+			teleportToPlayer(tpBox.Text)
+		end
+	end
+end)
+-- ================= TELEPORT LOCATION =================
+
+label("📍 TELEPORT LOCATION", 470)
+
+-- function teleport
+local function tp(cf, name)
+	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+		player.Character.HumanoidRootPart.CFrame = cf
+
+		-- efek premium
+		local head = player.Character:FindFirstChild("Head")
+		if head then
+			local bill = Instance.new("BillboardGui", head)
+			bill.Size = UDim2.new(0,200,0,50)
+			bill.StudsOffset = Vector3.new(0,3,0)
+			bill.AlwaysOnTop = true
+
+			local txt = Instance.new("TextLabel", bill)
+			txt.Size = UDim2.new(1,0,1,0)
+			txt.BackgroundTransparency = 1
+			txt.Text = "TP: "..name
+			txt.TextColor3 = Color3.new(1,1,1)
+			txt.Font = Enum.Font.GothamBold
+			txt.TextScaled = true
+
+			task.delay(2, function()
+				if bill then bill:Destroy() end
+			end)
+		end
+	end
+end
+
+-- ================= DATA =================
+local dealer = CFrame.new(-96.1, 7.5, 583.8)
+local gunshop = CFrame.new(40.3, 7.4, 369.5)
+local skitles = CFrame.new(-163.9, 7.4, 232.2)
+local sekolah = CFrame.new(-345.5, 7.4, 145.2)
+local apart = CFrame.new(-61.3, 4.3, -97.5)
+local hood = CFrame.new(-551.1, 11.7, 560.5)
+
+-- ================= BUTTON =================
+local dealerBtn = btn("Dealer", 510)
+dealerBtn.MouseButton1Click:Connect(function()
+	tp(dealer, "Dealer")
+end)
+
+local gunBtn = btn("Gun Shop", 555)
+gunBtn.MouseButton1Click:Connect(function()
+	tp(gunshop, "Gun Shop")
+end)
+
+local skitBtn = btn("Skitles", 600)
+skitBtn.MouseButton1Click:Connect(function()
+	tp(skitles, "Skitles")
+end)
+
+local sekBtn = btn("Sekolah", 645)
+sekBtn.MouseButton1Click:Connect(function()
+	tp(sekolah, "Sekolah")
+end)
+
+local aptBtn = btn("Apartement", 690)
+aptBtn.MouseButton1Click:Connect(function()
+	tp(apart, "Apartement")
+end)
+
+local hoodBtn = btn("Hood 44A", 735)
+hoodBtn.MouseButton1Click:Connect(function()
+	tp(hood, "Hood 44A")
+end)
+
+-- update scroll biar muat
+scroll.CanvasSize = UDim2.new(0,0,0,900)
+-- ================= ANTI BIG HEAD TO FRIEND =================
+
+local antiFriend = true
+
+-- UI
+label("👥 FRIEND PROTECT", 780)
+local antiBtn = btn("Anti BigHead Friend [ON]", 820)
+
+antiBtn.MouseButton1Click:Connect(function()
+	antiFriend = not antiFriend
+	antiBtn.Text = "Anti BigHead Friend ["..(antiFriend and "ON" or "OFF").."]"
+end)
+
+local function isFriend(plr)
+	return player:IsFriendsWith(plr.UserId)
+end
+
+-- ================= FIX BIG HEAD (REALTIME + NO BUG) =================
+RunService.Heartbeat:Connect(function()
+	if not big then return end
+	
+	for _,plr in pairs(Players:GetPlayers()) do
+		if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
+			
+			local head = plr.Character.Head
+			
+			-- simpan size original
+			if not original[plr] then
+				original[plr] = head.Size
+			end
+			
+			-- 🚫 JIKA TEMAN → BALIKIN NORMAL
+			if antiFriend and isFriend(plr) then
+				head.Size = original[plr]
+				head.Transparency = 0
+				
+			else
+				-- 💀 MUSUH → BIG HEAD
+				head.Size = original[plr] * 4
+				head.Transparency = 0.4
+			end
+		end
+	end
+end)
+
+-- ================= FIX PLAYER BARU / RESPAWN =================
+Players.PlayerAdded:Connect(function(plr)
+	plr.CharacterAdded:Connect(function(char)
+		task.wait(0.5)
+		
+		local head = char:FindFirstChild("Head")
+		if head then
+			
+			if not original[plr] then
+				original[plr] = head.Size
+			end
+			
+			if big and not (antiFriend and isFriend(plr)) then
+				head.Size = original[plr] * 4
+				head.Transparency = 0.4
+			end
+		end
+	end)
+end)
+
+-- ================= FIX SCROLL =================
+task.wait(1)
+
+local maxY = 0
+for _,v in pairs(scroll:GetChildren()) do
+	if v:IsA("TextButton") or v:IsA("TextLabel") or v:IsA("TextBox") then
+		local y = v.Position.Y.Offset + v.Size.Y.Offset
+		if y > maxY then
+			maxY = y
+		end
+	end
+end
+
+scroll.CanvasSize = UDim2.new(0,0,0,maxY + 120)
+-- ================= ESP NAME ONLY (CLEAN VERSION) =================
+
+local espEnabled = true
+local drawings = {}
+
+-- UI
+label("👁️ ESP NAME", 860)
+local espBtn = btn("ESP Name [ON]", 900)
+
+espBtn.MouseButton1Click:Connect(function()
+	espEnabled = not espEnabled
+	espBtn.Text = "ESP Name ["..(espEnabled and "ON" or "OFF").."]"
+end)
+
+-- SETTINGS
+local MAX_DISTANCE = 400 -- biar gak terlalu jauh (stabil & gak bug)
+
+-- FUNCTION
+local function isFriend(plr)
+	return player:IsFriendsWith(plr.UserId)
+end
+
+local adminList = {
+	[player.UserId] = true
+}
+
+-- ================= RENDER =================
+RunService.RenderStepped:Connect(function()
+	
+	-- hide semua dulu (ANTI DOUBLE BUG)
+	for _,v in pairs(drawings) do
+		v.Visible = false
+	end
+	
+	if not espEnabled then return end
+	if not Drawing then return end
+	
+	for _,plr in pairs(Players:GetPlayers()) do
+		if plr ~= player then
+			
+			local char = plr.Character
+			local head = char and char:FindFirstChild("Head")
+			
+			if head then
+				local dist = (camera.CFrame.Position - head.Position).Magnitude
+				
+				-- 🚫 LIMIT JARAK
+				if dist <= MAX_DISTANCE then
+					
+					local pos, visible = camera:WorldToViewportPoint(head.Position)
+					
+					-- 🚫 FIX BUG BELAKANG / DOUBLE
+					if visible and pos.Z > 0 then
+						
+						local id = plr.UserId
+						
+						-- buat sekali saja (ANTI LAG)
+						if not drawings[id] then
+							local txt = Drawing.new("Text")
+							txt.Size = 14
+							txt.Center = true
+							txt.Outline = true
+							txt.Font = 2
+							drawings[id] = txt
+						end
+						
+						-- 🎨 WARNA
+						if adminList[plr.UserId] then
+							drawings[id].Color = Color3.fromRGB(255,0,0)
+						elseif isFriend(plr) then
+							drawings[id].Color = Color3.fromRGB(100,200,255)
+						else
+							drawings[id].Color = Color3.fromRGB(255,255,255)
+						end
+						
+						drawings[id].Text = plr.Name
+						drawings[id].Position = Vector2.new(pos.X, pos.Y - 25)
+						drawings[id].Visible = true
+					end
+				end
+			end
+		end
+	end
+end)
+
+-- ================= FIX SCROLL =================
+task.wait(1)
+
+local maxY = 0
+for _,v in pairs(scroll:GetChildren()) do
+	if v:IsA("TextButton") or v:IsA("TextLabel") or v:IsA("TextBox") then
+		local y = v.Position.Y.Offset + v.Size.Y.Offset
+		if y > maxY then
+			maxY = y
+		end
+	end
+end
+
+scroll.CanvasSize = UDim2.new(0,0,0,maxY + 120)
+-- ================= FIX BIG HEAD TOTAL =================
+
+local function applyBigSafe(plr, char)
+	if plr == player then return end
+	
+	local head = char:FindFirstChild("Head")
+	if not head then return end
+	
+	-- simpan size original
+	if not original[plr] then
+		original[plr] = head.Size
+	end
+	
+	if big then
+		head.Size = original[plr] * 4
+		head.Transparency = 0.4
+	else
+		head.Size = original[plr]
+		head.Transparency = 0
+	end
+end
+
+-- ✅ apply ke semua player yang ada
+for _,plr in pairs(Players:GetPlayers()) do
+	if plr.Character then
+		applyBigSafe(plr, plr.Character)
+	end
+	
+	-- ✅ fix respawn
+	plr.CharacterAdded:Connect(function(char)
+		task.wait(0.3)
+		applyBigSafe(plr, char)
+	end)
+end
+
+-- ✅ fix player baru masuk server
+Players.PlayerAdded:Connect(function(plr)
+	plr.CharacterAdded:Connect(function(char)
+		task.wait(0.3)
+		applyBigSafe(plr, char)
+	end)
+end)
+
+-- ✅ loop safety (anti bug interior / delay load)
+RunService.Heartbeat:Connect(function()
+	if not big then return end
+	
+	for _,plr in pairs(Players:GetPlayers()) do
+		if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
+			local head = plr.Character.Head
+			
+			if original[plr] then
+				if head.Size ~= original[plr] * 4 then
+					head.Size = original[plr] * 4
+					head.Transparency = 0.4
+				end
+			end
+		end
+	end
+end)
