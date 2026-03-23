@@ -42,11 +42,11 @@ if not killSwitch() then return end
 
 -- ================= KEY LIST =================
 local VALID_KEYS = {
-    ["abjh-skfn-78fn-uuia"] = true,
-    ["skvd-as7a-l7a9-nak2"] = true,
-    ["asfn-sfw2-34dg-35gs"] = true,
-    ["sddf-dhr5-dbfs-egds"] = true,
-    ["asfs-sw2s-2fsa-gasf"] = true
+    ["sdfe-sdfe-fses-sdfe"] = true,
+    ["bfdg-sdfe-sdfs-dess"] = true,
+    ["sfw2-2faw-2bsd-eges"] = true,
+    ["svse-dfe3-sfaw-avfe"] = true,
+    ["sdfs-eer3-3dgs-35as"] = true
 }
 
 -- ================= FILE =================
