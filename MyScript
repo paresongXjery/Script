@@ -845,3 +845,26 @@ task.spawn(function()
         end
     end
 end)
+
+-- ================= CLOSE BUTTON =================
+
+task.spawn(function()
+	task.wait(1)
+
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Name = "CloseButton"
+	closeBtn.Parent = main
+	closeBtn.Size = UDim2.new(0, 28, 0, 28)
+	closeBtn.Position = UDim2.new(1, -34, 0, 6)
+	closeBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+	closeBtn.Text = "X"
+	closeBtn.TextColor3 = Color3.new(1, 1, 1)
+	closeBtn.TextScaled = true
+	closeBtn.Font = Enum.Font.GothamBold
+
+	Instance.new("UICorner", closeBtn)
+
+	closeBtn.MouseButton1Click:Connect(function()
+		gui.Enabled = false
+	end)
+end)
