@@ -42,11 +42,11 @@ if not killSwitch() then return end
 
 -- ================= KEY LIST =================
 local VALID_KEYS = {
-    ["sdfe-sdfe-fses-sdfe"] = true,
-    ["bfdg-sdfe-sdfs-dess"] = true,
-    ["sfw2-2faw-2bsd-eges"] = true,
-    ["svse-dfe3-sfaw-avfe"] = true,
-    ["sdfs-eer3-3dgs-35as"] = true
+    ["4er0-xJ3r-YsP3-K4nN"] = true,
+    ["K4k4-B31R-eNg6-4ngt"] = true,
+    ["J4w4-54mA-B3g0-Jmbt"] = true,
+    ["S2l4-w3s1-n1c5-B02s"] = true,
+    ["MAS BAHLIL GANTENG"] = true
 }
 
 -- ================= FILE =================
@@ -141,7 +141,7 @@ frame.BackgroundColor3 = Color3.fromRGB(15,15,25)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1,0,0,40)
-title.Text = "🔑 Jery Key System"
+title.Text = "🔑 Pasword Login"
 title.TextColor3 = Color3.new(1,1,1)
 title.BackgroundTransparency = 1
 title.TextScaled = true
