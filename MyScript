@@ -8,7 +8,7 @@ local username = player.Name
 
 -- ================= CONFIG =================
 local CONFIG = {
-    KILL_URL = "https://raw.githubusercontent.com/paresongXjery/Key/refs/heads/main/status.json", -- GANTI
+    KILL_URL = "https://raw.githubusercontent.com/paresongXjery/Key/refs/heads/main/jery_data.json", -- GANTI
     WEBHOOK = "https://discord.com/api/webhooks/1484027586840625333/xobs9n5VtkGWjo4_nJOG3qzufDTTh6jcPJaOcJVExr-v7OjBmeg6L3lrkpm6sUeOchG1",
     KEY_FILE = "jery_key.txt",
     DATA_FILE = "jery_data.json",
@@ -46,7 +46,7 @@ local VALID_KEYS = {
     ["K4k4-B31R-eNg6-4ngt"] = true,
     ["J4w4-54mA-B3g0-Jmbt"] = true,
     ["S2l4-w3s1-n1c5-B02s"] = true,
-    ["hauc-7djc-83fh-8edh"] = true
+    ["hauc-7djc-83fh-8edh"] = true,
 }
 
 -- ================= FILE =================
